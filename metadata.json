@@ -1,0 +1,6 @@
+{
+  "name": "PDF Studio — Editor & Konverter PDF Profesional",
+  "description": "Aplikasi editor dan konverter PDF lengkap: edit teks & gambar, kelola halaman, konversi PDF ke Word (DOCX) & Excel (XLSX), serta OCR dokumen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
