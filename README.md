@@ -95,14 +95,14 @@ Informasi framework, bahasa pemrograman, library, dan tools yang digunakan dapat
 
 📂 Project Structure
 text
-PDF-Studio/
-│
-├── README.md
-│
-├── screenshots/
-│   └── dashboard.png
-│
-└── (source code aplikasi)
+PDF-Studio/<br>
+│<br>
+├── README.md<br>
+│<br>
+├── screenshots/<br>
+│   └── dashboard.png<br>
+│<br>
+└── (source code aplikasi)<br>
 
 📌 Development Status
 
