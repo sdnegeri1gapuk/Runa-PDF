@@ -15,8 +15,6 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
   currentPageIndex,
   onAddObject,
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'draw' | 'stamp'>('draw');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -36,6 +34,8 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
       }
     }
   }, [activeTab]);
+
+  if (!isOpen) return null;
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;

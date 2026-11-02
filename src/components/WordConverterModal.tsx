@@ -28,8 +28,6 @@ export const WordConverterModal: React.FC<WordConverterModalProps> = ({
   pdfDoc,
   documentName,
 }) => {
-  if (!isOpen) return null;
-
   const [useOcr, setUseOcr] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionProgress, setConversionProgress] = useState(0);
@@ -37,6 +35,8 @@ export const WordConverterModal: React.FC<WordConverterModalProps> = ({
   const [extractedElements, setExtractedElements] = useState<DocumentStructureElement[]>([]);
   const [conversionCompleted, setConversionCompleted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  if (!isOpen) return null;
 
   const startConversion = async () => {
     if (!pdfDoc) {

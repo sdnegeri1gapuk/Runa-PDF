@@ -126,34 +126,23 @@ export default function App() {
         const tabId = `tab_${Date.now()}`;
         setActiveTabId(tabId);
 
-        // Generate thumbnails asynchronously
-        const thumbs: Record<number, string> = {};
-        for (const p of loadedPages) {
-          try {
-            const url = await generatePageThumbnail(loadedDoc, p.pageNumber, 180);
-            thumbs[p.pageNumber] = url;
-          } catch {
-            // Ignore single thumb error
-          }
-        }
-        setPageThumbnails(thumbs);
+        // Update tabs collection immediately so editor is ready without blocking
+        const tabItem: OpenDocumentTab = {
+          id: tabId,
+          name,
+          pdfBytes: newBytesCopy,
+          pdfDoc: loadedDoc,
+          pages: loadedPages,
+          currentPageIndex: 0,
+          pageThumbnails: {},
+          objects: initialObjects,
+          undoStack: [],
+          redoStack: [],
+          zoom: 1.1,
+          hasUnsavedChanges: false,
+        };
 
-        // Update tabs collection
         setTabs((prev) => {
-          const tabItem: OpenDocumentTab = {
-            id: tabId,
-            name,
-            pdfBytes: newBytesCopy,
-            pdfDoc: loadedDoc,
-            pages: loadedPages,
-            currentPageIndex: 0,
-            pageThumbnails: thumbs,
-            objects: initialObjects,
-            undoStack: [],
-            redoStack: [],
-            zoom: 1.1,
-            hasUnsavedChanges: false,
-          };
           const existingIdx = prev.findIndex((t) => t.name === name);
           if (existingIdx !== -1) {
             const updated = [...prev];
@@ -162,6 +151,26 @@ export default function App() {
           }
           return [...prev, tabItem];
         });
+
+        setStatusMessage('Dokumen siap diedit');
+        setIsProcessing(false);
+
+        // Generate thumbnails asynchronously in background
+        (async () => {
+          const thumbs: Record<number, string> = {};
+          for (const p of loadedPages) {
+            try {
+              const url = await generatePageThumbnail(loadedDoc, p.pageNumber, 180);
+              thumbs[p.pageNumber] = url;
+            } catch {
+              // Ignore single thumb error
+            }
+          }
+          setPageThumbnails(thumbs);
+          setTabs((prev) =>
+            prev.map((t) => (t.id === tabId ? { ...t, pageThumbnails: thumbs } : t))
+          );
+        })();
 
         setStatusMessage('Dokumen siap diedit');
       } catch (err: any) {
@@ -273,16 +282,25 @@ export default function App() {
           hasUnsavedChanges: false,
         };
 
-        // Async generate thumbnail
-        generatePageThumbnail(loadedDoc, 1, 180).then((thumb) => {
+        // Async generate thumbnails for all pages of loadedDoc
+        (async () => {
+          const thumbs: Record<number, string> = {};
+          for (const p of loadedPages) {
+            try {
+              const thumb = await generatePageThumbnail(loadedDoc, p.pageNumber, 180);
+              thumbs[p.pageNumber] = thumb;
+            } catch {}
+          }
           setTabs((prev) =>
-            prev.map((t) =>
-              t.id === tabId
-                ? { ...t, pageThumbnails: { ...t.pageThumbnails, 1: thumb } }
-                : t
-            )
+            prev.map((t) => (t.id === tabId ? { ...t, pageThumbnails: thumbs } : t))
           );
-        });
+          setActiveTabId((currentActiveId) => {
+            if (currentActiveId === tabId) {
+              setPageThumbnails(thumbs);
+            }
+            return currentActiveId;
+          });
+        })();
 
         newTabs.push(newTab);
       } catch (err: any) {
@@ -705,6 +723,7 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left Sidebar: Pages & Thumbnails */}
         <LeftSidebar
+          pdfDoc={pdfDoc}
           pages={pages}
           currentPageIndex={currentPageIndex}
           onSelectPage={setCurrentPageIndex}
@@ -769,35 +788,43 @@ export default function App() {
       />
 
       {/* Dedicated Modals */}
-      <WordConverterModal
-        isOpen={activeView === 'convert_word'}
-        onClose={() => setActiveView('editor')}
-        pdfDoc={pdfDoc}
-        documentName={documentName}
-      />
+      {activeView === 'convert_word' && (
+        <WordConverterModal
+          isOpen={true}
+          onClose={() => setActiveView('editor')}
+          pdfDoc={pdfDoc}
+          documentName={documentName}
+        />
+      )}
 
-      <ExcelConverterModal
-        isOpen={activeView === 'convert_excel'}
-        onClose={() => setActiveView('editor')}
-        pdfDoc={pdfDoc}
-        documentName={documentName}
-      />
+      {activeView === 'convert_excel' && (
+        <ExcelConverterModal
+          isOpen={true}
+          onClose={() => setActiveView('editor')}
+          pdfDoc={pdfDoc}
+          documentName={documentName}
+        />
+      )}
 
-      <PdfToolsModal
-        isOpen={activeView === 'tools'}
-        onClose={() => setActiveView('editor')}
-        currentPdfBytes={pdfBytes}
-        documentName={documentName}
-        totalPages={pages.length || 1}
-        onLoadNewPdfBytes={(bytes, newName) => loadPdfFromBytes(bytes, newName)}
-      />
+      {activeView === 'tools' && (
+        <PdfToolsModal
+          isOpen={true}
+          onClose={() => setActiveView('editor')}
+          currentPdfBytes={pdfBytes}
+          documentName={documentName}
+          totalPages={pages.length || 1}
+          onLoadNewPdfBytes={(bytes, newName) => loadPdfFromBytes(bytes, newName)}
+        />
+      )}
 
-      <SignatureModal
-        isOpen={isSignatureModalOpen}
-        onClose={() => setIsSignatureModalOpen(false)}
-        currentPageIndex={currentPageIndex}
-        onAddObject={handleAddObject}
-      />
+      {isSignatureModalOpen && (
+        <SignatureModal
+          isOpen={true}
+          onClose={() => setIsSignatureModalOpen(false)}
+          currentPageIndex={currentPageIndex}
+          onAddObject={handleAddObject}
+        />
+      )}
     </div>
   );
 }

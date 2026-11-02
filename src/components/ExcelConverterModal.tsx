@@ -30,8 +30,6 @@ export const ExcelConverterModal: React.FC<ExcelConverterModalProps> = ({
   pdfDoc,
   documentName,
 }) => {
-  if (!isOpen) return null;
-
   const [useAiDetection, setUseAiDetection] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progressStatus, setProgressStatus] = useState('');
@@ -39,6 +37,8 @@ export const ExcelConverterModal: React.FC<ExcelConverterModalProps> = ({
   const [activeTableIndex, setActiveTableIndex] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasScannedPages, setHasScannedPages] = useState(false);
+
+  if (!isOpen) return null;
 
   const startTableExtraction = async () => {
     if (!pdfDoc) {

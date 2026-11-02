@@ -37,8 +37,6 @@ export const PdfToolsModal: React.FC<PdfToolsModalProps> = ({
   totalPages,
   onLoadNewPdfBytes,
 }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<ToolTab>('watermark');
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -58,6 +56,8 @@ export const PdfToolsModal: React.FC<PdfToolsModalProps> = ({
 
   // Compress state
   const [compressLevel, setCompressLevel] = useState<'normal' | 'high'>('normal');
+
+  if (!isOpen) return null;
 
   const handleAddMergeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
